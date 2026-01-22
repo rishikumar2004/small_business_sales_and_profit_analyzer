@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "username": "admin_one",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "businessName": "TechSolutions",
+    "companyUsername": "tech_solutions",
+    "role": "Admin",
+    "currency": "INR",
+    "theme": "dark"
+  },
+  {
+    "id": 101,
+    "username": "analyst_one",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "role": "Analyst",
+    "businessName": "TechSolutions",
+    "companyUsername": "tech_solutions",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 102,
+    "username": "staff_one",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "role": "Staff",
+    "businessName": "TechSolutions",
+    "companyUsername": "tech_solutions",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 2,
+    "username": "admin_two",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "businessName": "GourmetGrill",
+    "companyUsername": "gourmet_grill",
+    "role": "Admin",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 201,
+    "username": "accountant_two",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "role": "Accountant",
+    "businessName": "GourmetGrill",
+    "companyUsername": "gourmet_grill",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 202,
+    "username": "staff_two",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "role": "Staff",
+    "businessName": "GourmetGrill",
+    "companyUsername": "gourmet_grill",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 300,
+    "username": "demo_user",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "businessName": "Demo Enterprise",
+    "companyUsername": "demo_company",
+    "role": "Admin",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 301,
+    "username": "demo_staff",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "role": "Staff",
+    "businessName": "Demo Enterprise",
+    "companyUsername": "demo_company",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 1768226469264,
+    "username": "abcef",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "businessName": "abcef",
+    "companyUsername": "abc",
+    "role": "Admin",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 1768226676709,
+    "username": "user1_1768226676586",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "businessName": "Global Corp",
+    "companyUsername": "test_company_1768226676586",
+    "role": "Admin",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 1768226688997,
+    "username": "user1_1768226688886",
+    "password": "$2b$10$sxqS3ZGM1NOvp801EdGSH.589MbEUp.Js7DNmhd64Y3fqeg81nGwa",
+    "businessName": "Global Corp",
+    "companyUsername": "test_company_1768226688886",
+    "role": "Admin",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 1768921559665,
+    "username": "accountant_one",
+    "password": "$2b$10$wIV4JgTk8/SUOMFITH0gI.xkJkgBRW417DZc/q1UfbRxB9lPV2D2u",
+    "role": "Accountant",
+    "businessName": "TechSolutions",
+    "companyUsername": "tech_solutions",
+    "currency": "USD",
+    "theme": "dark"
+  }
+]

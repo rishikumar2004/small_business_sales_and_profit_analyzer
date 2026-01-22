@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1769006299924,
+    "companyUsername": "tech_solutions",
+    "name": "software 01",
+    "sku": "SFT01",
+    "quantity": 500,
+    "costPrice": 1500,
+    "sellingPrice": 1750,
+    "lowStockThreshold": 25,
+    "updatedAt": "2026-01-21T14:38:19.924Z"
+  }
+]

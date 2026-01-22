@@ -1,0 +1,46 @@
+[
+  {
+    "id": 2002,
+    "userId": 201,
+    "companyUsername": "gourmet_grill",
+    "user": "accountant_two",
+    "role": "Accountant",
+    "type": "expense",
+    "amount": 1500,
+    "description": "Kitchen Supplies",
+    "date": "2026-01-12T09:00:00.000Z"
+  },
+  {
+    "id": 3001,
+    "userId": 3,
+    "companyUsername": "demo_company",
+    "user": "demo_user",
+    "role": "Admin",
+    "type": "income",
+    "amount": 10000,
+    "description": "Demo Revenue",
+    "date": "2026-01-12T10:00:00.000Z"
+  },
+  {
+    "id": 1768901032951,
+    "userId": 1,
+    "companyUsername": "tech_solutions",
+    "user": "admin_one",
+    "role": "Admin",
+    "type": "income",
+    "amount": 150,
+    "description": "office",
+    "date": "2026-01-20"
+  },
+  {
+    "id": 1769094670126,
+    "userId": 1,
+    "companyUsername": "tech_solutions",
+    "user": "admin_one",
+    "role": "Admin",
+    "type": "income",
+    "amount": 133,
+    "description": "Rent",
+    "date": "2026-01-22"
+  }
+]
