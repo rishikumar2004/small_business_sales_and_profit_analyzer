@@ -1,11 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Package, AlertTriangle, TrendingUp, Plus, Search, Trash2, Edit2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Package, AlertTriangle, TrendingUp, Plus, Minus, Search, Trash2, Edit2 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 
 export default function Inventory() {
+    const { user } = useAuth();
     const [items, setItems] = useState([]);
     const { showNotification } = useNotification();
+
+    const currencySymbol = useMemo(() => {
+        if (user?.currency === 'INR') return '₹';
+        if (user?.currency === 'EUR') return '€';
+        if (user?.currency === 'GBP') return '£';
+        return '$';
+    }, [user?.currency]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [newItem, setNewItem] = useState({
@@ -72,6 +81,32 @@ export default function Inventory() {
         }
     };
 
+    const handleUpdateQuantity = async (id, delta) => {
+        const item = items.find(i => i.id === id);
+        if (!item) return;
+
+        const newQuantity = Math.max(0, item.quantity + delta);
+        if (newQuantity === item.quantity) return;
+
+        try {
+            const res = await fetch(`/api/inventory/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ quantity: newQuantity })
+            });
+
+            if (res.ok) {
+                setItems(items.map(i => i.id === id ? { ...i, quantity: newQuantity } : i));
+                showNotification(`${delta > 0 ? 'Increased' : 'Decreased'} ${item.name} stock to ${newQuantity}`);
+            }
+        } catch (error) {
+            console.error("Failed to update quantity", error);
+        }
+    };
+
     // Analysis
     const totalInventoryValue = items.reduce((acc, item) => acc + (item.quantity * item.costPrice), 0);
     const potentialRevenue = items.reduce((acc, item) => acc + (item.quantity * item.sellingPrice), 0);
@@ -104,7 +139,7 @@ export default function Inventory() {
                             <div className="flex-between">
                                 <div>
                                     <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Total Cost Value</p>
-                                    <h2 style={{ fontSize: '1.5rem', margin: 0 }}>${totalInventoryValue.toLocaleString()}</h2>
+                                    <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{currencySymbol}{totalInventoryValue.toLocaleString()}</h2>
                                 </div>
                                 <div style={{ padding: '0.75rem', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent)' }}>
                                     <Package size={24} />
@@ -115,7 +150,7 @@ export default function Inventory() {
                             <div className="flex-between">
                                 <div>
                                     <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Potential Profit</p>
-                                    <h2 style={{ fontSize: '1.5rem', margin: 0, color: 'var(--success)' }}>+${potentialProfit.toLocaleString()}</h2>
+                                    <h2 style={{ fontSize: '1.5rem', margin: 0, color: 'var(--success)' }}>+{currencySymbol}{potentialProfit.toLocaleString()}</h2>
                                 </div>
                                 <div style={{ padding: '0.75rem', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)' }}>
                                     <TrendingUp size={24} />
@@ -198,19 +233,57 @@ export default function Inventory() {
                                     <td style={{ padding: '1rem', fontWeight: 500 }}>{item.name}</td>
                                     <td style={{ padding: '1rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{item.sku}</td>
                                     <td style={{ padding: '1rem' }}>
-                                        <span style={{
-                                            padding: '0.25rem 0.75rem',
-                                            borderRadius: '1rem',
-                                            background: item.quantity <= item.lowStockThreshold ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                                            color: item.quantity <= item.lowStockThreshold ? 'var(--danger)' : 'var(--success)',
-                                            fontWeight: 600,
-                                            fontSize: '0.85rem'
-                                        }}>
-                                            {item.quantity}
-                                        </span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <button
+                                                onClick={() => handleUpdateQuantity(item.id, -1)}
+                                                style={{
+                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                    border: 'none',
+                                                    color: 'var(--danger)',
+                                                    borderRadius: '4px',
+                                                    padding: '2px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <Minus size={14} />
+                                            </button>
+                                            <span style={{
+                                                padding: '0.25rem 0.75rem',
+                                                borderRadius: '1rem',
+                                                background: item.quantity <= item.lowStockThreshold ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                                                color: item.quantity <= item.lowStockThreshold ? 'var(--danger)' : 'var(--success)',
+                                                fontWeight: 600,
+                                                fontSize: '0.85rem',
+                                                minWidth: '40px',
+                                                textAlign: 'center'
+                                            }}>
+                                                {item.quantity}
+                                            </span>
+                                            <button
+                                                onClick={() => handleUpdateQuantity(item.id, 1)}
+                                                style={{
+                                                    background: 'rgba(34, 197, 94, 0.1)',
+                                                    border: 'none',
+                                                    color: 'var(--success)',
+                                                    borderRadius: '4px',
+                                                    padding: '2px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <Plus size={14} />
+                                            </button>
+                                        </div>
                                     </td>
-                                    <td style={{ padding: '1rem' }}>${item.costPrice.toFixed(2)}</td>
-                                    <td style={{ padding: '1rem' }}>${item.sellingPrice.toFixed(2)}</td>
+                                    <td style={{ padding: '1rem' }}>{currencySymbol}{item.costPrice.toFixed(2)}</td>
+                                    <td style={{ padding: '1rem' }}>{currencySymbol}{item.sellingPrice.toFixed(2)}</td>
                                     <td style={{ padding: '1rem' }}>
                                         <button
                                             onClick={() => handleDelete(item.id)}

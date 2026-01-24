@@ -15,6 +15,13 @@ export default function AnalystTools() {
         fetchTransactions();
     }, []);
 
+    const currencySymbol = useMemo(() => {
+        if (user?.currency === 'INR') return '₹';
+        if (user?.currency === 'EUR') return '€';
+        if (user?.currency === 'GBP') return '£';
+        return '$';
+    }, [user?.currency]);
+
     const fetchTransactions = async () => {
         const res = await fetch('/api/transactions', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -267,7 +274,7 @@ export default function AnalystTools() {
                         <div style={{ padding: '1.5rem', background: 'var(--bg-primary)', borderRadius: '0.5rem' }}>
                             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Avg. Transaction Value</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginTop: '0.5rem' }}>
-                                ${((stats.avgIncome + stats.avgExpense) / 2).toFixed(2)}
+                                {currencySymbol}{((stats.avgIncome + stats.avgExpense) / 2).toFixed(2)}
                             </div>
                         </div>
 
@@ -281,7 +288,7 @@ export default function AnalystTools() {
                         <div style={{ padding: '1.5rem', background: 'var(--bg-primary)', borderRadius: '0.5rem' }}>
                             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Projected Net (30 Days)</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginTop: '0.5rem', color: stats.nextMonthProjection >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                                ${stats.nextMonthProjection.toFixed(2)}
+                                {currencySymbol}{stats.nextMonthProjection.toFixed(2)}
                             </div>
                             <div style={{ fontSize: '0.75rem', marginTop: '0.25rem', opacity: 0.7 }}>Based on current avg</div>
                         </div>

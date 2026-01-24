@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { TrendingUp, TrendingDown, DollarSign, Trash2, IndianRupee, Euro, PoundSterling, Image as ImageIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Trash2, IndianRupee, Euro, PoundSterling, Image as ImageIcon, PieChart as PieIcon, ListChecks } from 'lucide-react';
 import Header from '../components/Header';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    AreaChart, Area
+    AreaChart, Area, PieChart, Pie, Cell, Legend
 } from 'recharts';
 
 export default function Dashboard() {
@@ -52,6 +52,56 @@ export default function Dashboard() {
 
     const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
     const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+
+    // Pie Chart Data: Income vs Expense
+    const incomeExpenseData = useMemo(() => [
+        { name: 'Income', value: totalIncome, color: '#22c55e' },
+        { name: 'Expense', value: totalExpense, color: '#ef4444' }
+    ], [totalIncome, totalExpense]);
+
+    // Pie Chart Data: Expenses by Category
+    const expenseCategoryData = useMemo(() => {
+        const categories = {};
+
+        // Smarter categorization logic
+        const catKeywords = {
+            'Rent': ['rent', 'lease', 'apartment'],
+            'Salary': ['salary', 'wage', 'payroll', 'employee'],
+            'Office Supplies': ['office', 'stationary', 'print', 'supplies'],
+            'Travel': ['travel', 'flight', 'hotel', 'uber', 'taxi', 'transport'],
+            'Utilities': ['utility', 'water', 'gas', 'bill'],
+            'Internet': ['internet', 'wifi', 'broadband'],
+            'Electricity': ['electricity', 'eb bill', 'power'],
+            'Marketing': ['marketing', 'ads', 'facebook', 'google', 'adwords'],
+            'Food': ['food', 'lunch', 'dinner', 'restaurant', 'meal'],
+            'Maintenance': ['repair', 'maintenance', 'fix'],
+            'Insurance': ['insurance', 'policy']
+        };
+
+        transactions.filter(t => t.type === 'expense').forEach(t => {
+            let cat = t.category;
+
+            // If No Category or "Other", try to auto-detect from description
+            if (!cat || cat === 'Other' || cat === 'other') {
+                const desc = (t.description || '').toLowerCase();
+                for (const [category, keywords] of Object.entries(catKeywords)) {
+                    if (keywords.some(k => desc.includes(k))) {
+                        cat = category;
+                        break;
+                    }
+                }
+            }
+
+            cat = cat || 'Other';
+            categories[cat] = (categories[cat] || 0) + t.amount;
+        });
+
+        return Object.entries(categories)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+    }, [transactions]);
+
+    const PIE_COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6'];
 
     // Data Analysis for Charts
     const chartData = useMemo(() => {
@@ -119,11 +169,117 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Row 2: Charts & Transactions */}
-                <div className="dashboard-grid">
+                {/* Unified Dashboard Content Grid */}
+                <div className="dashboard-grid" style={{ gap: '2rem', rowGap: '2.5rem' }}>
+                    {/* Pie Chart 1: Income vs Expense */}
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <PieIcon size={18} color="var(--accent)" /> Income vs Expense
+                            </h3>
+                        </div>
+                        <div style={{ height: '250px', width: '100%' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={incomeExpenseData}
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {incomeExpenseData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px' }}
+                                        itemStyle={{ color: '#fff' }}
+                                        formatter={(value) => [`${currencySymbol}${parseFloat(value).toLocaleString()}`, '']}
+                                    />
+                                    <Legend verticalAlign="bottom" height={36} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Pie Chart 2: Expense Categories */}
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <ListChecks size={18} color="var(--accent)" /> Expense Distribution
+                            </h3>
+                        </div>
+                        <div style={{ height: '250px', width: '100%' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={expenseCategoryData}
+                                        innerRadius={65}
+                                        outerRadius={85}
+                                        paddingAngle={2}
+                                        dataKey="value"
+                                        cx="50%"
+                                        cy="50%"
+                                    >
+                                        {expenseCategoryData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px' }}
+                                        itemStyle={{ color: '#fff' }}
+                                        formatter={(value) => [`${currencySymbol}${parseFloat(value).toLocaleString()}`, 'Amount']}
+                                    />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        align="center"
+                                        layout="horizontal"
+                                        iconSize={10}
+                                        wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Additional Stats: Top Spending */}
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <h3 style={{ margin: 0, fontSize: '1rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <TrendingDown size={18} color="var(--danger)" /> Spending Summary
+                        </h3>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            {expenseCategoryData.slice(0, 3).map((item, idx) => (
+                                <div key={item.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                    <div className="flex-between" style={{ fontSize: '0.85rem' }}>
+                                        <span style={{ fontWeight: 500 }}>{item.name}</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>{currencySymbol}{item.value.toLocaleString()}</span>
+                                    </div>
+                                    <div style={{ width: '100%', height: '6px', background: 'var(--bg-primary)', borderRadius: '10px', overflow: 'hidden' }}>
+                                        <div style={{
+                                            width: `${totalExpense > 0 ? (item.value / totalExpense * 100) : 0}%`,
+                                            height: '100%',
+                                            background: PIE_COLORS[idx % PIE_COLORS.length],
+                                            borderRadius: '10px'
+                                        }} />
+                                    </div>
+                                </div>
+                            ))}
+                            {expenseCategoryData.length === 0 && (
+                                <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem 0' }}>
+                                    No expense data available.
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            Top 3 expense categories account for <b>{totalExpense > 0 ? ((expenseCategoryData.slice(0, 3).reduce((s, i) => s + i.value, 0) / totalExpense) * 100).toFixed(1) : 0}%</b> of total spending.
+                        </div>
+                    </div>
+
+                    {/* Lower Section Cards (Now part of the same grid) */}
                     {/* Col 1: Bar Chart */}
                     <div className="card">
-                        <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Revenue vs Expense</h3>
+                        <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Revenue vs Expense</h3>
                         <div className="chart-container">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={chartData}>
@@ -133,8 +289,8 @@ export default function Dashboard() {
                                     <Tooltip
                                         cursor={false}
                                         contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px' }}
-                                        itemStyle={{ fontSize: '12px' }}
-                                        formatter={(value) => [`${currencySymbol}${value.toFixed(2)}`, value >= 0 ? 'Income' : 'Expense']}
+                                        itemStyle={{ fontSize: '12px', color: '#fff' }}
+                                        formatter={(value) => [`${currencySymbol}${value.toFixed(2)}`, '']}
                                     />
                                     <Bar dataKey="income" name="Income" fill="#22c55e" radius={[4, 4, 0, 0]} />
                                     <Bar dataKey="expense" name="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
@@ -142,6 +298,7 @@ export default function Dashboard() {
                             </ResponsiveContainer>
                         </div>
                     </div>
+
 
                     {/* Col 2: Area Chart */}
                     <div className="card">
@@ -165,6 +322,7 @@ export default function Dashboard() {
                                     <Tooltip
                                         cursor={false}
                                         contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px' }}
+                                        itemStyle={{ color: '#fff' }}
                                         formatter={(value) => [`${currencySymbol}${value.toFixed(2)}`, 'Net Profit']}
                                     />
                                     <Area type="monotone" dataKey="net" name="Profit/Loss" stroke="var(--accent)" fillOpacity={1} fill="url(#colorProfit)" strokeWidth={3} baseValue={0} />
@@ -178,7 +336,7 @@ export default function Dashboard() {
                         <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Recent</h3>
                         <div className="tx-list">
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                {transactions.slice().reverse().map(tx => (
+                                {transactions.slice().reverse().slice(0, 4).map(tx => (
                                     <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--bg-primary)', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                             <div style={{

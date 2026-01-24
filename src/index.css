@@ -1,3 +1,4 @@
+html,
 :root {
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
@@ -10,6 +11,7 @@
   --success: #22c55e;
   --border: rgba(255, 255, 255, 0.05);
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -22,6 +24,7 @@ body.light-mode {
   --accent: #4f46e5;
   --accent-hover: #4338ca;
   --border: rgba(0, 0, 0, 0.05);
+  color-scheme: light;
 }
 
 body {
@@ -90,9 +93,51 @@ button {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.input-field:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
 .input-field:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.input-field[type="date"] {
+  position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.input-field[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  filter: invert(1);
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+}
+
+.input-field[type="date"]::-webkit-inner-spin-button,
+.input-field[type="date"]::-webkit-clear-button {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.light-mode .input-field[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+.input-field[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 /* Custom Select Styles */
@@ -178,6 +223,54 @@ button {
 
 .custom-select-trigger.active .select-chevron {
   transform: rotate(180deg);
+}
+
+/* Calendar Component Styles */
+.calendar-dropdown {
+  min-width: 310px !important;
+}
+
+.calendar-day {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  color: var(--text-primary);
+}
+
+.calendar-day.clickable {
+  cursor: pointer;
+}
+
+.calendar-day.clickable:hover {
+  background-color: var(--accent);
+  color: white;
+}
+
+.calendar-day.selected {
+  background-color: var(--accent) !important;
+  color: white !important;
+  font-weight: 700;
+}
+
+.btn-icon {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: var(--accent);
+  color: white;
 }
 
 .btn {

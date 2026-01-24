@@ -1,25 +1,33 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FileText, Filter, TrendingUp, TrendingDown, Calendar, Search, ChevronDown } from 'lucide-react';
+import { FileText, Filter, TrendingUp, TrendingDown, Calendar, Search, ChevronDown, Image as ImageIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Header from '../components/Header';
+import CalendarPicker from '../components/CalendarPicker';
 
 export default function Reports() {
     const { user } = useAuth();
     const [transactions, setTransactions] = useState([]);
     const [filters, setFilters] = useState({
-        category: 'All',
-        timeframe: 'Monthly', // 'Weekly' or 'Monthly'
-        search: ''
+        timeframe: 'Monthly', // 'Weekly', 'Monthly', or 'Custom'
+        search: '',
+        startDate: '',
+        endDate: '',
+        category: 'All'
     });
 
     const [openDropdown, setOpenDropdown] = useState(null); // 'timeframe' or 'category'
     const timeframeRef = useRef(null);
     const categoryRef = useRef(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [previewImage, setPreviewImage] = useState(null);
+    const itemsPerPage = 10;
+
     const timeframes = [
         { id: 'All', label: 'All Time' },
         { id: 'Weekly', label: 'Last 7 Days' },
-        { id: 'Monthly', label: 'Last 30 Days' }
+        { id: 'Monthly', label: 'Last 30 Days' },
+        { id: 'Custom', label: 'Custom Range' }
     ];
 
     const categories = [
@@ -76,6 +84,17 @@ export default function Reports() {
                 const oneMonthAgo = new Date();
                 oneMonthAgo.setMonth(now.getMonth() - 1);
                 if (txDate < oneMonthAgo) return false;
+            } else if (filters.timeframe === 'Custom') {
+                if (filters.startDate) {
+                    const start = new Date(filters.startDate);
+                    start.setHours(0, 0, 0, 0);
+                    if (txDate < start) return false;
+                }
+                if (filters.endDate) {
+                    const end = new Date(filters.endDate);
+                    end.setHours(23, 59, 59, 999);
+                    if (txDate > end) return false;
+                }
             }
 
             // Category filtering
@@ -97,6 +116,19 @@ export default function Reports() {
         const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
         return { income, expense, net: income - expense };
     }, [filteredTransactions]);
+
+    const paginatedTransactions = useMemo(() => {
+        const sorted = [...filteredTransactions].reverse();
+        const start = (currentPage - 1) * itemsPerPage;
+        return sorted.slice(start, start + itemsPerPage);
+    }, [filteredTransactions, currentPage]);
+
+    const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+
+    // Reset pagination on filter change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters]);
 
     return (
         <div className="fade-in">
@@ -205,7 +237,38 @@ export default function Reports() {
                             </div>
                         </div>
                     </div>
+
+                    {filters.timeframe === 'Custom' && (
+                        <div className="fade-in" style={{ display: 'flex', gap: '1.5rem', marginTop: '1.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Start Date</label>
+                                <CalendarPicker
+                                    value={filters.startDate}
+                                    onChange={date => setFilters({ ...filters, startDate: date })}
+                                    placeholder="Select start date"
+                                />
+                            </div>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>End Date</label>
+                                <CalendarPicker
+                                    value={filters.endDate}
+                                    onChange={date => setFilters({ ...filters, endDate: date })}
+                                    placeholder="Select end date"
+                                />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <button
+                                    className="btn"
+                                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', height: '48px', padding: '0 1.5rem' }}
+                                    onClick={() => setFilters({ ...filters, startDate: '', endDate: '' })}
+                                >
+                                    Clear Dates
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
+
 
                 {/* Transaction List */}
                 <div className="card">
@@ -221,15 +284,30 @@ export default function Reports() {
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
                                     <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>DATE</th>
+                                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>RECEIPT</th>
                                     <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>DESCRIPTION</th>
                                     <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>BY USER</th>
                                     <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem', textAlign: 'right' }}>AMOUNT</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredTransactions.slice().reverse().map(tx => (
+                                {paginatedTransactions.map(tx => (
                                     <tr key={tx.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
                                         <td style={{ padding: '1rem', fontSize: '0.9rem' }}>{new Date(tx.date).toLocaleDateString()}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            {tx.receiptImage ? (
+                                                <div
+                                                    onClick={() => setPreviewImage(tx.receiptImage)}
+                                                    style={{ width: '40px', height: '40px', borderRadius: '4px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}
+                                                >
+                                                    <img src={tx.receiptImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Receipt" />
+                                                </div>
+                                            ) : (
+                                                <div style={{ color: 'var(--text-secondary)', opacity: 0.3 }}>
+                                                    <ImageIcon size={20} />
+                                                </div>
+                                            )}
+                                        </td>
                                         <td style={{ padding: '1rem' }}>
                                             <div style={{ fontWeight: 500 }}>{tx.description || 'No description'}</div>
                                             <span style={{ fontSize: '0.7rem', color: 'var(--accent)', textTransform: 'uppercase' }}>{tx.category || 'General'}</span>
@@ -252,8 +330,76 @@ export default function Reports() {
                             </div>
                         )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1.5rem', borderTop: '1px solid var(--border)' }}>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="btn-icon"
+                                style={{ opacity: currentPage === 1 ? 0.5 : 1 }}
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                                Page <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{currentPage}</span> of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="btn-icon"
+                                style={{ opacity: currentPage === totalPages ? 0.5 : 1 }}
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Image Preview Modal */}
+            {previewImage && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 10000,
+                    padding: '2rem'
+                }} onClick={() => setPreviewImage(null)}>
+                    <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }} onClick={e => e.stopPropagation()}>
+                        <button
+                            onClick={() => setPreviewImage(null)}
+                            style={{
+                                position: 'absolute',
+                                top: '-40px',
+                                right: '-40px',
+                                background: 'white',
+                                color: 'black',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '32px',
+                                height: '32px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <X size={20} />
+                        </button>
+                        <img
+                            src={previewImage}
+                            alt="Receipt Large"
+                            style={{ width: '100%', height: 'auto', maxHeight: '80vh', borderRadius: '0.75rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

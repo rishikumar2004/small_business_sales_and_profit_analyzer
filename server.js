@@ -230,56 +230,71 @@ app.post('/api/transactions', authenticateToken, (req, res) => {
 
 // Bulk Add Transactions (For Excel Import)
 app.post('/api/transactions/bulk', authenticateToken, (req, res) => {
-    const items = req.body; // Expecting array of { type, amount, description, date }
-    console.log(`[Import] Received ${items?.length} items from ${req.user.username}`);
+    try {
+        const items = req.body;
+        console.log(`[Bulk Import] Processing ${items?.length} items for user: ${req.user.username}`);
 
-    if (!Array.isArray(items) || items.length === 0) {
-        console.warn('[Import] Invalid data format or empty array');
-        return res.status(400).json({ message: 'Invalid data format: Expected a non-empty array of transactions.' });
-    }
-
-    const transactions = readData(TRANSACTIONS_FILE);
-    let successCount = 0;
-
-    items.forEach((item, index) => {
-        // Validate core fields
-        const amt = parseFloat(item.amount);
-        if (isNaN(amt) || amt <= 0) {
-            console.warn(`[Import] Skipping item ${index}: Invalid amount ${item.amount}`);
-            return; // Skip invalid items
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ message: 'Invalid data format: Expected a non-empty array.' });
         }
 
-        const newTx = {
-            id: Date.now() + index, // Ensure unique IDs
-            userId: req.user.id,
-            companyUsername: req.user.companyUsername,
-            user: req.user.username,
-            role: req.user.role,
-            type: item.type?.toLowerCase() || 'expense',
-            amount: amt,
-            description: item.description || 'Imported Transaction',
-            date: item.date || new Date().toISOString()
-        };
-        transactions.push(newTx);
-        successCount++;
-    });
+        const transactions = readData(TRANSACTIONS_FILE);
+        let successCount = 0;
+        const now = Date.now();
 
-    if (successCount === 0) {
-        return res.status(400).json({ message: 'No valid transactions found to import.' });
+        items.forEach((item, index) => {
+            const amt = parseFloat(item.amount);
+            if (isNaN(amt) || amt <= 0) return;
+
+            const newTx = {
+                id: `bulk_${now}_${index}_${Math.floor(Math.random() * 1000)}`,
+                userId: req.user.id,
+                companyUsername: req.user.companyUsername,
+                user: req.user.username,
+                role: req.user.role,
+                type: item.type?.toLowerCase() === 'income' ? 'income' : 'expense',
+                amount: amt,
+                description: item.description?.trim() || 'Imported Transaction',
+                date: item.date || new Date().toISOString(),
+                category: item.category || (item.description?.toLowerCase().includes('rent') ? 'Rent' : 'Other')
+            };
+            transactions.push(newTx);
+            successCount++;
+        });
+
+        if (successCount === 0) {
+            return res.status(400).json({ message: 'No valid transactions found (check amounts and headers).' });
+        }
+
+        writeData(TRANSACTIONS_FILE, transactions);
+        console.log(`[Bulk Import] Success: ${successCount} items saved.`);
+        res.status(201).json({ message: `Successfully imported ${successCount} transactions` });
+    } catch (error) {
+        console.error('[Bulk Import] Error:', error);
+        res.status(500).json({ message: 'Internal server error during bulk import: ' + error.message });
     }
-
-    writeData(TRANSACTIONS_FILE, transactions);
-    console.log(`[Import] Successfully saved ${successCount} transactions.`);
-    res.status(201).json({ message: `Successfully imported ${successCount} transactions` });
 });
 
-// Delete Transaction
+// Delete All Transactions (Bulk) - Must be defined BEFORE /:id
+app.delete('/api/transactions/all', authenticateToken, (req, res) => {
+    let transactions = readData(TRANSACTIONS_FILE);
+    const initialLength = transactions.length;
+
+    // Keep only transactions that DO NOT belong to this company
+    transactions = transactions.filter(t => t.companyUsername !== req.user.companyUsername);
+    const deletedCount = initialLength - transactions.length;
+
+    writeData(TRANSACTIONS_FILE, transactions);
+    res.json({ message: `Success: Deleted ${deletedCount} transactions.` });
+});
+
+// Delete Single Transaction
 app.delete('/api/transactions/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     let transactions = readData(TRANSACTIONS_FILE);
     const initialLength = transactions.length;
 
-    // Ensure transaction belongs to the user's company
+    // Ensure transaction belongs to the user's company and matches ID
     transactions = transactions.filter(t => t.id != id || t.companyUsername !== req.user.companyUsername);
 
     if (transactions.length === initialLength) {
@@ -415,6 +430,19 @@ app.delete('/api/inventory/:id', authenticateToken, checkRole(['Admin', 'Owner',
 
     writeData(INVENTORY_FILE, inventory);
     res.json({ message: 'Item deleted' });
+});
+
+app.patch('/api/inventory/:id', authenticateToken, checkRole(['Admin', 'Owner', 'Staff']), (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+    const inventory = readData(INVENTORY_FILE);
+    const index = inventory.findIndex(i => i.id == id && i.companyUsername === req.user.companyUsername);
+
+    if (index === -1) return res.status(404).json({ message: 'Item not found' });
+
+    inventory[index] = { ...inventory[index], ...updates, updatedAt: new Date().toISOString() };
+    writeData(INVENTORY_FILE, inventory);
+    res.json(inventory[index]);
 });
 
 

@@ -16,7 +16,7 @@
     "role": "Analyst",
     "businessName": "TechSolutions",
     "companyUsername": "tech_solutions",
-    "currency": "USD",
+    "currency": "INR",
     "theme": "dark"
   },
   {
@@ -26,7 +26,7 @@
     "role": "Staff",
     "businessName": "TechSolutions",
     "companyUsername": "tech_solutions",
-    "currency": "USD",
+    "currency": "INR",
     "theme": "dark"
   },
   {
@@ -116,6 +116,16 @@
     "role": "Accountant",
     "businessName": "TechSolutions",
     "companyUsername": "tech_solutions",
+    "currency": "INR",
+    "theme": "dark"
+  },
+  {
+    "id": 1769166408617,
+    "username": "testuser_1769166408519",
+    "password": "$2b$10$skN6bpCgn/YSFqJQOUHMze/Jg8LEtPZiXYf2NOnxoEDbc6hESTG2e",
+    "businessName": "BulkTestCorp",
+    "companyUsername": "bulktest_1769166408519",
+    "role": "Admin",
     "currency": "USD",
     "theme": "dark"
   }
