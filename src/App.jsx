@@ -10,7 +10,8 @@ import Reports from './pages/Reports';
 import Users from './pages/Users';
 import Inventory from './pages/Inventory';
 import AnalystTools from './pages/AnalystTools';
-import { LayoutDashboard, UserCircle, LogOut, PlusCircle, Users as UsersIcon, ChartBar, Package, FileText } from 'lucide-react';
+import Predictions from './pages/Predictions';
+import { Store, UserCircle, LogOut, PlusCircle, Users as UsersIcon, BarChart3, Package, FileText, ShoppingBag, ShoppingCart, TrendingUp } from 'lucide-react';
 
 function PrivateRoute({ children, roles }) {
   const { token, user } = useAuth();
@@ -43,11 +44,14 @@ function Sidebar() {
 
   return (
     <div className="sidebar">
-      <h2 className="title" style={{ fontSize: '1.2rem', marginBottom: '2rem', lineHeight: '1.4' }}>Tech Business<br />Analyzer</h2>
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+      <h2 className="title" style={{ fontSize: '1rem', marginBottom: '1.5rem', lineHeight: '1.4', letterSpacing: '0.02em', paddingBottom: '0.1rem' }}>
+        R-mart<br />
+        <span style={{ whiteSpace: 'nowrap' }}>business analyser</span>
+      </h2>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {canSeeDashboard && (
           <Link to="/" className={isActive('/')}>
-            <LayoutDashboard size={20} /> Dashboard
+            <Store size={20} /> Dashboard
           </Link>
         )}
         {canSeeAddTx && (
@@ -58,6 +62,11 @@ function Sidebar() {
         {(userRole === 'admin' || userRole === 'owner' || userRole === 'accountant' || userRole === 'analyst') && (
           <Link to="/reports" className={isActive('/reports')}>
             <FileText size={20} /> Reports
+          </Link>
+        )}
+        {(userRole === 'admin' || userRole === 'owner' || userRole === 'accountant') && (
+          <Link to="/predictions" className={isActive('/predictions')}>
+            <TrendingUp size={20} /> Retail Forecasts
           </Link>
         )}
         {canSeeInventory && (
@@ -72,21 +81,26 @@ function Sidebar() {
         )}
         {canSeeAnalyst && (
           <Link to="/analyst" className={isActive('/analyst')}>
-            <ChartBar size={20} /> Analyst Tools
+            <BarChart3 size={20} /> Store Tools
           </Link>
         )}
         <Link to="/profile" className={isActive('/profile')}>
           <UserCircle size={20} /> Profile
         </Link>
       </nav>
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', marginBottom: '1rem' }}>
-        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Logged in as</div>
-        <div style={{ fontWeight: '600', color: 'var(--accent)' }}>{user?.username}</div>
-        <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{user?.role}</div>
+      <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+        <div style={{ marginBottom: '1rem', padding: '0 0.5rem' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Logged in as</div>
+          <div style={{ fontWeight: '600', color: 'var(--accent)' }}>{user?.username}</div>
+          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>{user?.role}</div>
+        </div>
+        <button
+          onClick={logout}
+          className="nav-item logout-btn"
+        >
+          <LogOut size={20} /> Logout
+        </button>
       </div>
-      <button onClick={logout} className="nav-item" style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}>
-        <LogOut size={20} /> Logout
-      </button>
     </div>
   );
 }
@@ -94,6 +108,7 @@ function Sidebar() {
 function Layout({ children }) {
   return (
     <div className="layout">
+      <div className="sidebar-trigger"></div>
       <Sidebar />
       <div className="main-content">
         {children}
@@ -151,6 +166,12 @@ function AppContent() {
       <Route path="/analyst" element={
         <PrivateRoute roles={['Analyst']}>
           <Layout><AnalystTools /></Layout>
+        </PrivateRoute>
+      } />
+
+      <Route path="/predictions" element={
+        <PrivateRoute roles={['Admin', 'Owner', 'Accountant']}>
+          <Layout><Predictions /></Layout>
         </PrivateRoute>
       } />
     </Routes>

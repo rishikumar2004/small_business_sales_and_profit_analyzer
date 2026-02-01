@@ -66,8 +66,8 @@
     "businessName": "Demo Enterprise",
     "companyUsername": "demo_company",
     "role": "Admin",
-    "currency": "USD",
-    "theme": "dark"
+    "currency": "INR",
+    "theme": "light"
   },
   {
     "id": 301,
@@ -125,6 +125,36 @@
     "password": "$2b$10$skN6bpCgn/YSFqJQOUHMze/Jg8LEtPZiXYf2NOnxoEDbc6hESTG2e",
     "businessName": "BulkTestCorp",
     "companyUsername": "bulktest_1769166408519",
+    "role": "Admin",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 1769257749446,
+    "username": "super_admin_one",
+    "password": "$2b$10$xPLv2xKJXLJd0vfdpsINC.D5OFDuN6O/iFyGPRDzD35y49UjDnOY6",
+    "businessName": "Super Market",
+    "companyUsername": "super_market",
+    "role": "Admin",
+    "currency": "INR",
+    "theme": "dark"
+  },
+  {
+    "id": 1769449489065,
+    "username": "heavyuser_1769449488983",
+    "password": "$2b$10$/SJTf7bhIjlsx9ZLOGPupOnD6KmCa11Nf8vsPr3wXZRVONCC1zmJi",
+    "businessName": "HeavyCorp",
+    "companyUsername": "heavy_1769449488983",
+    "role": "Admin",
+    "currency": "USD",
+    "theme": "dark"
+  },
+  {
+    "id": 1769449563679,
+    "username": "chunkuser_1769449563594",
+    "password": "$2b$10$1hBzX0/reLLtCHjag87oVu3CXDfEHDxNfylYTa75UPvnIMuZzhru6",
+    "businessName": "ChunkCorp",
+    "companyUsername": "chunk_1769449563594",
     "role": "Admin",
     "currency": "USD",
     "theme": "dark"

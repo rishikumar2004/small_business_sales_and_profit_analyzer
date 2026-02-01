@@ -232,46 +232,57 @@ app.post('/api/transactions', authenticateToken, (req, res) => {
 app.post('/api/transactions/bulk', authenticateToken, (req, res) => {
     try {
         const items = req.body;
-        console.log(`[Bulk Import] Processing ${items?.length} items for user: ${req.user.username}`);
-
         if (!Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ message: 'Invalid data format: Expected a non-empty array.' });
         }
 
+        console.log(`[Bulk Import] ${req.user.username} is importing ${items.length} items...`);
+
+        // Load existing transactions
         const transactions = readData(TRANSACTIONS_FILE);
-        let successCount = 0;
         const now = Date.now();
+        let successCount = 0;
+        let skipCount = 0;
 
-        items.forEach((item, index) => {
+        const newEntries = items.map((item, index) => {
             const amt = parseFloat(item.amount);
-            if (isNaN(amt) || amt <= 0) return;
+            if (isNaN(amt)) {
+                skipCount++;
+                return null;
+            }
 
-            const newTx = {
-                id: `bulk_${now}_${index}_${Math.floor(Math.random() * 1000)}`,
+            return {
+                id: `bulk_${now}_${index}_${Math.floor(Math.random() * 1000000)}`,
                 userId: req.user.id,
                 companyUsername: req.user.companyUsername,
                 user: req.user.username,
                 role: req.user.role,
-                type: item.type?.toLowerCase() === 'income' ? 'income' : 'expense',
+                type: (item.type?.toLowerCase() === 'income' || item.type?.toLowerCase() === 'credit') ? 'income' : 'expense',
                 amount: amt,
                 description: item.description?.trim() || 'Imported Transaction',
                 date: item.date || new Date().toISOString(),
-                category: item.category || (item.description?.toLowerCase().includes('rent') ? 'Rent' : 'Other')
+                category: item.category || (item.description?.toLowerCase().includes('rent') ? 'Rent' : 'Other'),
+                importedAt: new Date().toISOString()
             };
-            transactions.push(newTx);
-            successCount++;
-        });
+        }).filter(item => item !== null);
 
-        if (successCount === 0) {
-            return res.status(400).json({ message: 'No valid transactions found (check amounts and headers).' });
+        if (newEntries.length === 0) {
+            return res.status(400).json({ message: 'No valid transaction records found in this batch.' });
         }
 
+        // Atomic-ish write: push all at once
+        transactions.push(...newEntries);
         writeData(TRANSACTIONS_FILE, transactions);
-        console.log(`[Bulk Import] Success: ${successCount} items saved.`);
-        res.status(201).json({ message: `Successfully imported ${successCount} transactions` });
+
+        console.log(`[Bulk Import] Success: ${newEntries.length} items saved. (${skipCount} skipped)`);
+        res.status(201).json({
+            message: `Successfully imported ${newEntries.length} transactions`,
+            count: newEntries.length,
+            skipped: skipCount
+        });
     } catch (error) {
-        console.error('[Bulk Import] Error:', error);
-        res.status(500).json({ message: 'Internal server error during bulk import: ' + error.message });
+        console.error('[Bulk Import] Fatal Error:', error);
+        res.status(500).json({ message: 'Server error during import: ' + error.message });
     }
 });
 
@@ -388,6 +399,22 @@ app.delete('/api/admin/users/:id', authenticateToken, isAdmin, (req, res) => {
     res.json({ message: 'User deleted' });
 });
 
+// Reset All Users for Company (Admin only)
+app.delete('/api/admin/reset/users', authenticateToken, isAdmin, (req, res) => {
+    let users = readData(USERS_FILE);
+    const initialCount = users.length;
+
+    // Keep users NOT in this company OR users in this company but is the current admin
+    users = users.filter(u =>
+        u.companyUsername !== req.user.companyUsername ||
+        u.id === req.user.id
+    );
+
+    const deletedCount = initialCount - users.length;
+    writeData(USERS_FILE, users);
+    res.json({ message: `Successfully reset users. Deleted ${deletedCount} user(s).` });
+});
+
 // --- Inventory Routes ---
 
 app.get('/api/inventory', authenticateToken, (req, res) => {
@@ -398,7 +425,7 @@ app.get('/api/inventory', authenticateToken, (req, res) => {
 });
 
 app.post('/api/inventory', authenticateToken, checkRole(['Admin', 'Owner', 'Staff']), (req, res) => {
-    const { name, sku, quantity, costPrice, sellingPrice, lowStockThreshold } = req.body;
+    const { name, sku, quantity, costPrice, sellingPrice, lowStockThreshold, image } = req.body;
     if (!name || !sku) return res.status(400).json({ message: 'Name and SKU are required' });
 
     const inventory = readData(INVENTORY_FILE);
@@ -411,6 +438,7 @@ app.post('/api/inventory', authenticateToken, checkRole(['Admin', 'Owner', 'Staf
         costPrice: Number(costPrice) || 0,
         sellingPrice: Number(sellingPrice) || 0,
         lowStockThreshold: Number(lowStockThreshold) || 5,
+        image: image || null,
         updatedAt: new Date().toISOString()
     };
 

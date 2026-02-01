@@ -87,15 +87,19 @@ export default function AnalystTools() {
 
                 for (let i = 0; i < rawData.length; i++) {
                     const row = rawData[i];
+                    if (!row || !Array.isArray(row)) continue;
+
                     // Clean row strings for comparison
                     const rowStr = row.map(cell => cell ? cell.toString().toLowerCase().trim() : '');
 
-                    if (rowStr.includes('income source') || rowStr.includes('income amount')) {
+                    // Broader set of keywords for income
+                    if (rowStr.includes('income source') || rowStr.includes('income amount') || rowStr.includes('sales') || rowStr.includes('revenue')) {
                         headerRowIndex = i;
                         detectedType = 'income';
                         break;
                     }
-                    if (rowStr.includes('expense name') || rowStr.includes('expense amount') || rowStr.includes('description')) {
+                    // Broader set of keywords for expense
+                    if (rowStr.includes('expense name') || rowStr.includes('expense amount') || rowStr.includes('description') || rowStr.includes('category') || rowStr.includes('cost')) {
                         headerRowIndex = i;
                         detectedType = 'expense';
                         break;
@@ -103,7 +107,7 @@ export default function AnalystTools() {
                 }
 
                 if (headerRowIndex === -1) {
-                    showMsg('Invalid file format. Could not find valid headers (Expense Name/Income Source).', true);
+                    showMsg('Invalid file format. Could not find valid headers (Sales, Category, Amount, etc.).', true);
                     return;
                 }
 
@@ -113,20 +117,16 @@ export default function AnalystTools() {
                 // Dynamic Column Mapping
                 let descIdx = -1;
                 let amtIdx = -1;
-                let dateIdx = headers.indexOf('date');
+                let dateIdx = headers.findIndex(h => h === 'date' || h === 'time' || h === 'timestamp');
 
-                if (detectedType === 'income') {
-                    descIdx = headers.indexOf('income source');
-                    amtIdx = headers.indexOf('income amount');
-                } else {
-                    descIdx = headers.indexOf('expense name');
-                    if (descIdx === -1) descIdx = headers.indexOf('description');
-                    amtIdx = headers.indexOf('expense amount');
-                    if (amtIdx === -1) amtIdx = headers.indexOf('amount');
-                }
+                // Try to find the best match for Description/Category/Item
+                descIdx = headers.findIndex(h => h === 'category' || h === 'description' || h === 'item' || h === 'income source' || h === 'expense name' || h === 'transaction');
 
-                if (descIdx === -1 || amtIdx === -1) {
-                    showMsg(`Missing required columns for ${detectedType} import (Name/Amount).`, true);
+                // Try to find the best match for Amount/Sales/Profit/Cost
+                amtIdx = headers.findIndex(h => h === 'sales' || h === 'amount' || h === 'profit' || h === 'cost' || h === 'price' || h === 'income amount' || h === 'expense amount' || h === 'total');
+
+                if (descIdx === -1 || amtIdx === -1 || dateIdx === -1) {
+                    showMsg(`Missing required columns. Ensure your file has Description, Amount, and Date.`, true);
                     return;
                 }
 
@@ -213,7 +213,7 @@ export default function AnalystTools() {
 
     return (
         <div className="fade-in">
-            <Header title="Analyst Tools" />
+            <Header title="Store Management Tools" />
 
             <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 {msg && <div style={{
@@ -260,7 +260,7 @@ export default function AnalystTools() {
                         </div>
                     </div>
                     <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                        * Supports .xlsx, .csv formats. Ensure columns: type (income/expense), amount, description.
+                        * Supports .xlsx, .csv formats. Required columns: type, amount, description, and date.
                     </p>
                 </div>
 

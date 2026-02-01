@@ -58,10 +58,13 @@ export default function Register() {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', height: '100vh', overflowY: 'auto', padding: '4rem 1rem 2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', height: '100vh', overflowY: 'auto', padding: '2rem 1rem' }}>
             <div className="card fade-in" style={{ width: '100%', maxWidth: '400px' }}>
-                <h1 className="title" style={{ fontSize: '1.5rem' }}>Tech Business Analyzer</h1>
-                <p className="subtitle">Create your Tech Business Analyzer account</p>
+                <h1 className="title" style={{ fontSize: '1.5rem', marginBottom: '1.5rem', lineHeight: '1.4', paddingBottom: '0.1rem' }}>
+                    R-mart<br />
+                    <span style={{ whiteSpace: 'nowrap' }}>business analyser</span>
+                </h1>
+                <p className="subtitle" style={{ marginBottom: '0.5rem' }}>Create your R-mart business analyser account</p>
                 {error && <div style={{
                     color: 'var(--danger)',
                     marginBottom: '1rem',
@@ -74,11 +77,13 @@ export default function Register() {
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
                         <label>Company ID (Unique Identifier) *</label>
-                        <div style={{ position: 'relative' }}>
-                            <Building size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-secondary)' }} />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <div style={{ position: 'absolute', left: '14px', width: '20px', display: 'flex', justifyContent: 'center', color: 'var(--text-secondary)', zIndex: 1 }}>
+                                <Store size={18} />
+                            </div>
                             <input
                                 className="input-field"
-                                style={{ paddingLeft: '40px' }}
+                                style={{ paddingLeft: '46px' }}
                                 type="text"
                                 required
                                 value={formData.companyUsername}
@@ -93,11 +98,13 @@ export default function Register() {
 
                     <div className="input-group">
                         <label>Business Name *</label>
-                        <div style={{ position: 'relative' }}>
-                            <Briefcase size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-secondary)' }} />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <div style={{ position: 'absolute', left: '14px', width: '20px', display: 'flex', justifyContent: 'center', color: 'var(--text-secondary)', zIndex: 1 }}>
+                                <Store size={18} />
+                            </div>
                             <input
                                 className="input-field"
-                                style={{ paddingLeft: '40px' }}
+                                style={{ paddingLeft: '46px' }}
                                 type="text"
                                 required
                                 value={formData.businessName}
@@ -109,11 +116,13 @@ export default function Register() {
 
                     <div className="input-group">
                         <label>Username *</label>
-                        <div style={{ position: 'relative' }}>
-                            <User size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-secondary)' }} />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <div style={{ position: 'absolute', left: '14px', width: '20px', display: 'flex', justifyContent: 'center', color: 'var(--text-secondary)', zIndex: 1 }}>
+                                <User size={18} />
+                            </div>
                             <input
                                 className="input-field"
-                                style={{ paddingLeft: '40px' }}
+                                style={{ paddingLeft: '46px' }}
                                 type="text"
                                 required
                                 value={formData.username}
@@ -128,18 +137,38 @@ export default function Register() {
 
                     <div className="input-group">
                         <label>Password *</label>
-                        <div style={{ position: 'relative' }}>
-                            <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-secondary)' }} />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <div style={{ position: 'absolute', left: '14px', width: '20px', display: 'flex', justifyContent: 'center', color: 'var(--text-secondary)', zIndex: 1 }}>
+                                <Lock size={18} />
+                            </div>
                             <input
                                 className="input-field"
-                                style={{ paddingLeft: '40px', paddingRight: '80px' }}
+                                style={{ paddingLeft: '46px', paddingRight: '46px' }}
                                 type={showPassword ? "text" : "password"}
                                 required
                                 value={formData.password}
                                 onChange={e => setFormData({ ...formData, password: e.target.value })}
                                 placeholder="Strong password required"
                             />
-                            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '10px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{
+                                    position: 'absolute',
+                                    right: '12px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    border: 'none',
+                                    background: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-secondary)',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    zIndex: 1
+                                }}
+                            >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>

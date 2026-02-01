@@ -5,7 +5,7 @@ export default function Header({ title }) {
     const { theme, toggleTheme, user } = useAuth();
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <div>
                 <h1 className="title" style={{ margin: 0 }}>{title || 'Small Business Analyzer'}</h1>
                 <p className="subtitle" style={{ margin: 0 }}>Hello, {user?.businessName || 'Business Owner'}</p>
